@@ -1,5 +1,6 @@
 package org.deeplearning4j.examples.dataexamples;
 
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -55,22 +56,27 @@ public class MnistImagePipelineExampleLoad {
     public static final String DATA_URL = "http://github.com/myleott/mnist_png/raw/master/mnist_png.tar.gz";
 
     /** Location to save and extract the training/testing data */
-    public static final String DATA_PATH = FilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_Mnist/");
+    public static final String DATA_PATH = "C:\\Projects\\new\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\bio";
 
     private static Logger log = LoggerFactory.getLogger(MnistImagePipelineExampleLoad.class);
 
     public static void main(String[] args) throws Exception {
+        start("C:\\Projects\\new\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\bio\\testing", 6, 10, 150, 200 );
+    }
+
+
+    public static void start(String pathToFolder, int outputNumb, int batchSizeNumb, int imageH, int imageW) throws Exception {
         // image information
         // 28 * 28 grayscale
         // grayscale implies single channel
-        int height = 28;
-        int width = 28;
+        int height = imageH;
+        int width = imageW;
         int channels = 1;
         int rngseed = 123;
         Random randNumGen = new Random(rngseed);
-        int batchSize = 128;
-        int outputNum = 10;
-        int numEpochs = 15;
+        int batchSize = batchSizeNumb;
+        int outputNum = outputNumb;
+        //int numEpochs = epocheNumb;
 
          /*
         This class downloadData() downloads the data
@@ -82,16 +88,16 @@ public class MnistImagePipelineExampleLoad {
          */
 
 
-        downloadData();
+        //downloadData();
 
         // Define the File Paths
-        File trainData = new File(DATA_PATH + "/mnist_png/training");
-        File testData = new File(DATA_PATH + "/mnist_png/testing");
+        //File trainData = new File("C:\\Projects\\new\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\bio\\training");
+        File testData = new File(pathToFolder);
 
 
         // Define the FileSplit(PATH, ALLOWED FORMATS,random)
 
-        FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS,randNumGen);
+        //FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS,randNumGen);
         FileSplit test = new FileSplit(testData, NativeImageLoader.ALLOWED_FORMATS,randNumGen);
 
         // Extract the parent path as the image label
@@ -103,7 +109,7 @@ public class MnistImagePipelineExampleLoad {
         // Initialize the record reader
         // add a listener, to extract the name
 
-        recordReader.initialize(train);
+        //recordReader.initialize(train);
         //recordReader.setListeners(new LogRecordListener());
 
         // DataSet Iterator
@@ -125,7 +131,7 @@ public class MnistImagePipelineExampleLoad {
 
         // Where the saved model would be if
         // MnistImagePipelineSave has been run
-        File locationToSave = new File("trained_mnist_model.zip");
+        File locationToSave = new File("C:\\data\\trained_mnist_model.zip");
 
         if(locationToSave.exists()){
             System.out.println("\n######Saved Model Found######\n");
@@ -283,3 +289,4 @@ public class MnistImagePipelineExampleLoad {
 
 
 }
+
