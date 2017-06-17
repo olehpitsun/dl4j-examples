@@ -11,6 +11,12 @@ import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.deeplearning4j.examples.GUI.StringExample;
+
+import java.util.Map;
+import java.util.Set;
+
+import static org.deeplearning4j.examples.GUI.StringExample.hashMap;
 
 /**
  * Created by Oleh on 13.06.2017.
@@ -19,6 +25,7 @@ import javafx.stage.Stage;
 
 public class ClassificationResult extends Application {
 
+
     @Override
     public void start(Stage stage) {
         Scene scene = new Scene(new Group());
@@ -26,13 +33,22 @@ public class ClassificationResult extends Application {
         stage.setWidth(500);
         stage.setHeight(500);
 
+
+        System.out.println("-----------------------------------------");
+        Set<Map.Entry<String, String>> set = StringExample.getHashMap().entrySet();
+
+        for (Map.Entry<String, String> me : set) {
+            System.out.print(me.getKey() + ": ");
+            System.out.println(me.getValue());
+        }
+
+        System.out.println(set.iterator().next().getValue() + "rrrrrrrrrrrrrrrrrrrrrr");
+
         ObservableList<PieChart.Data> pieChartData =
                 FXCollections.observableArrayList(
-                        new PieChart.Data("Grapefruit", 13),
-                        new PieChart.Data("Oranges", 25),
-                        new PieChart.Data("Plums", 10),
-                        new PieChart.Data("Pears", 22),
-                        new PieChart.Data("Apples", 30));
+                        new PieChart.Data(set.iterator().next().getKey(), Double.parseDouble(set.iterator().next().getValue()))
+
+                        );
 
         final PieChart chart = new PieChart(pieChartData);
         chart.setTitle("Imported Fruits");

@@ -27,6 +27,7 @@
                         <Label fx:id="light2Label" mnemonicParsing="false" prefHeight="35.0" prefWidth="254.0" text="Batches" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                         <Slider fx:id="batchesClassificationSlider" prefHeight="14.0" prefWidth="155.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Button fx:id="OKClassificationButton" mnemonicParsing="false" onAction="#startClassification" prefHeight="25.0" prefWidth="100.0" text="OK" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Button fx:id="ShowClassificationResultButton" mnemonicParsing="false" onAction="#showClassificationResult" prefHeight="25.0" prefWidth="100.0" text="Результат" GridPane.columnIndex="0" GridPane.rowIndex="4" />
 
                     </children>
                </GridPane>

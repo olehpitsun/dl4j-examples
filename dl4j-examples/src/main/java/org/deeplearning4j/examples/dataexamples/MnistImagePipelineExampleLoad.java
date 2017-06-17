@@ -65,7 +65,7 @@ public class MnistImagePipelineExampleLoad {
     }
 
 
-    public static void start(String pathToFolder, int outputNumb, int batchSizeNumb, int imageH, int imageW) throws Exception {
+    public static String  start(String pathToFolder, int outputNumb, int batchSizeNumb, int imageH, int imageW) throws Exception {
         // image information
         // 28 * 28 grayscale
         // grayscale implies single channel
@@ -178,10 +178,13 @@ public class MnistImagePipelineExampleLoad {
 
         }
 
-        log.info(eval.stats());
+        //log.info(eval.stats());
 
+        return eval.stats();
 
     }
+
+
 
       /*
     Everything below here has nothing to do with your RecordReader,

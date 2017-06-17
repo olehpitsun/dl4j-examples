@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.deeplearning4j.examples.GUI.StringExample;
 import org.deeplearning4j.examples.GUI.tools.DirUntils;
 import org.deeplearning4j.examples.dataexamples.MnistImagePipelineExampleLoad;
 import org.deeplearning4j.examples.dataexamples.MnistImagePipelineExampleSave;
@@ -26,11 +27,10 @@ public class ConvolutionNeuralNetController {
     private Slider EpocheSlider, iterSlider, batchesSlider, batchesClassificationSlider;
     @FXML
     private Label epocheNumbLabel, iterLabel, batchesLabel, batchesClassificationLabel;
-
     @FXML
     private ProgressIndicator teachingIndicator, classificationIndicator;
 
-    private String pathToFolder, epocheNumb, iterCount, batchSixe, batchClassificationSixe;
+    private String pathToFolder, epocheNumb, iterCount, batchSixe, batchClassificationSixe, ResultOfClassificationLog;
     private int classCount;
     @FXML
     private void initialize() {
@@ -77,14 +77,11 @@ public class ConvolutionNeuralNetController {
      */
     @FXML
     private void startTeaching(){
-        //ClassificationResult cr = new ClassificationResult();
-        //Stage primaryStage = new Stage();
 
-        //cr.start(primaryStage);
+        teachingIndicator.setVisible(true);
 
         if(isInputValid()){
 
-            teachingIndicator.setVisible(true);
 
             Task<Void> task = new Task<Void>() {
                 @Override
@@ -99,7 +96,7 @@ public class ConvolutionNeuralNetController {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
+                    teachingIndicator.setVisible(false);
                     return null;
                 }
             };
@@ -107,7 +104,6 @@ public class ConvolutionNeuralNetController {
             Thread tasks = new Thread(task);
             tasks.start();
 
-            finishTeaching();
 
         }
     }
@@ -125,10 +121,15 @@ public class ConvolutionNeuralNetController {
                 System.out.println(pathToFolder + " " + classCount + " "+ Integer.valueOf(batchClassificationSixe));
 
                 try {
-                    MnistImagePipelineExampleLoad.start(pathToFolder, classCount, Integer.valueOf(batchClassificationSixe), 150, 200);
+                    String classificationResult = MnistImagePipelineExampleLoad.start(pathToFolder, classCount,
+                        Integer.valueOf(batchClassificationSixe), 150, 200);
+
+                    ResultOfClassificationLog = classificationResult;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                classificationIndicator.setVisible(false);
+
 
                 return null;
             }
@@ -139,6 +140,17 @@ public class ConvolutionNeuralNetController {
 
     }
 
+
+    @FXML
+    private void showClassificationResult(){
+        System.out.println("res " + ResultOfClassificationLog);
+        StringExample.start(ResultOfClassificationLog);
+
+        ClassificationResult cr = new ClassificationResult();
+        Stage primaryStage = new Stage();
+
+        cr.start(primaryStage);
+    }
 
     @FXML
     private void loadFolder(){
@@ -156,14 +168,7 @@ public class ConvolutionNeuralNetController {
         }
     }
 
-    /**
-     * завершення процесу навчання
-     * вивід повідомлень
-     */
-    @FXML
-    public void finishTeaching(){
-        teachingIndicator.setVisible(false);
-    }
+
 
     private boolean isInputValid() {
         String errorMessage = "";
