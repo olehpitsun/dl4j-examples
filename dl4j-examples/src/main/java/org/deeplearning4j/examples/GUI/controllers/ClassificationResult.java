@@ -13,6 +13,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.deeplearning4j.examples.GUI.StringExample;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,34 +28,33 @@ import static org.deeplearning4j.examples.GUI.StringExample.hashMap;
 public class ClassificationResult extends Application {
 
 
+
+
+
+
     @Override
     public void start(Stage stage) {
         Scene scene = new Scene(new Group());
-        stage.setTitle("Imported Fruits");
+        stage.setTitle("Результати класифікації");
         stage.setWidth(500);
         stage.setHeight(500);
 
+        String labels[]={"велосипед","мотоцикл","скутер"};
+        System.out.println(labels[0]);
 
-        System.out.println("-----------------------------------------");
+
         Set<Map.Entry<String, String>> set = StringExample.getHashMap().entrySet();
 
+        ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+
         for (Map.Entry<String, String> me : set) {
-            System.out.print(me.getKey() + ": ");
-            System.out.println(me.getValue());
+            pieChartData.add(new PieChart.Data(labels[Integer.parseInt(me.getKey().trim())] , Double.parseDouble(me.getValue())));
         }
 
-        System.out.println(set.iterator().next().getValue() + "rrrrrrrrrrrrrrrrrrrrrr");
-
-        ObservableList<PieChart.Data> pieChartData =
-                FXCollections.observableArrayList(
-                        new PieChart.Data(set.iterator().next().getKey(), Double.parseDouble(set.iterator().next().getValue()))
-
-                        );
-
         final PieChart chart = new PieChart(pieChartData);
-        chart.setTitle("Imported Fruits");
+        chart.setTitle("Результати класифікації");
         final Label caption = new Label("");
-        caption.setTextFill(Color.DARKORANGE);
+        caption.setTextFill(Color.ANTIQUEWHITE);
         caption.setStyle("-fx-font: 24 arial;");
 
         for (final PieChart.Data data : chart.getData()) {
@@ -62,8 +63,7 @@ public class ClassificationResult extends Application {
                         @Override public void handle(MouseEvent e) {
                             caption.setTranslateX(e.getSceneX());
                             caption.setTranslateY(e.getSceneY());
-                            caption.setText(String.valueOf(data.getPieValue())
-                                    + "%");
+                            caption.setText(String.valueOf(data.getPieValue()));
                         }
                     });
         }
