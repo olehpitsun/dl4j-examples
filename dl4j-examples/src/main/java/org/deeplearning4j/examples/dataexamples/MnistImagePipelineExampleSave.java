@@ -1,5 +1,4 @@
 package org.deeplearning4j.examples.dataexamples;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -14,6 +13,7 @@ import org.datavec.api.split.FileSplit;
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -26,6 +26,8 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
@@ -71,17 +73,21 @@ public class MnistImagePipelineExampleSave {
     private static Logger log = LoggerFactory.getLogger(MnistImagePipelineExampleSave.class);
 
     public static void main(String[] args) throws Exception {
+        start("C:\\Projects\\new\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\bio\\training", 2, 6, 10, 150, 200, 15);
+    }
+
+    public static void start(String pathToFolder, int epocheNumb, int outputNumb, int batchSizeNumb, int imageH, int imageW, int iter ) throws Exception {
         // image information
         // 28 * 28 grayscale
         // grayscale implies single channel
-        int height = 28;
-        int width = 28;
+        int height = imageH;
+        int width = imageW;
         int channels = 1;
         int rngseed = 123;
         Random randNumGen = new Random(rngseed);
-        int batchSize = 128;
-        int outputNum = 10;
-        int numEpochs = 15;
+        int batchSize = batchSizeNumb;
+        int outputNum = outputNumb;
+        int numEpochs = epocheNumb;
 
          /*
         This class downloadData() downloads the data
@@ -93,17 +99,17 @@ public class MnistImagePipelineExampleSave {
          */
 
 
-        downloadData();
+        //downloadData();
 
         // Define the File Paths
-        File trainData = new File(DATA_PATH + "/mnist_png/training");
-        File testData = new File(DATA_PATH + "/mnist_png/testing");
+        File trainData = new File(pathToFolder);
+        //File testData = new File("C:\\Projects\\new\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\bio\\testing");
 
 
         // Define the FileSplit(PATH, ALLOWED FORMATS,random)
 
         FileSplit train = new FileSplit(trainData, NativeImageLoader.ALLOWED_FORMATS,randNumGen);
-        FileSplit test = new FileSplit(testData,NativeImageLoader.ALLOWED_FORMATS,randNumGen);
+        //FileSplit test = new FileSplit(testData,NativeImageLoader.ALLOWED_FORMATS,randNumGen);
 
         // Extract the parent path as the image label
 
@@ -135,19 +141,19 @@ public class MnistImagePipelineExampleSave {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
             .seed(rngseed)
             .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-            .iterations(1)
+            .iterations(iter)
             .learningRate(0.006)
             .updater(Updater.NESTEROVS).momentum(0.9)
             .regularization(true).l2(1e-4)
             .list()
             .layer(0, new DenseLayer.Builder()
                 .nIn(height * width)
-                .nOut(100)
+                .nOut(800)
                 .activation(Activation.RELU)
                 .weightInit(WeightInit.XAVIER)
                 .build())
             .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                .nIn(100)
+                .nIn(800)
                 .nOut(outputNum)
                 .activation(Activation.SOFTMAX)
                 .weightInit(WeightInit.XAVIER)
@@ -169,8 +175,8 @@ public class MnistImagePipelineExampleSave {
         log.info("******SAVE TRAINED MODEL******");
         // Details
 
-        // Where to save model
-        File locationToSave = new File("trained_mnist_model.zip");
+        // Where to save modelFilenameUtils.concat(System.getProperty("java.io.tmpdir"), "dl4j_Mnist/");
+        File locationToSave = new File("C:\\data\\trained_mnist_model.zip");
 
         // boolean save Updater
         boolean saveUpdater = false;
@@ -178,6 +184,7 @@ public class MnistImagePipelineExampleSave {
         // ModelSerializer needs modelname, saveUpdater, Location
 
         ModelSerializer.writeModel(model,locationToSave,saveUpdater);
+
 
 
     }
