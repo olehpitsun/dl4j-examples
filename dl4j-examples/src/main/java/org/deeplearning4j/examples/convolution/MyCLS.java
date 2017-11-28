@@ -14,7 +14,6 @@ import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.datasets.iterator.MultipleEpochsIterator;
 import org.deeplearning4j.eval.Evaluation;
-import org.deeplearning4j.examples.GUI.entity.CnnParams;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.distribution.Distribution;
@@ -32,7 +31,6 @@ import org.deeplearning4j.ui.stats.StatsListener;
 import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
@@ -66,33 +64,26 @@ import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2YCrCb;
  *  - Tune by adjusting learning rate, updaters, activation & loss functions, regularization, ...
  */
 
-public class AnimalsClassification {
+public class MyCLS {
     protected static final Logger log = LoggerFactory.getLogger(AnimalsClassification.class);
-    protected static int height ;
-    protected static int width ;
+    protected static int height = 100;
+    protected static int width = 100;
     protected static int channels = 3;
-    protected static int numExamples = 70;
+    protected static int numExamples = 80;
     protected static int numLabels = 4;
     protected static int batchSize = 20;
 
-    protected static long seed = 42;
+    protected static long seed = 12;
     protected static Random rng = new Random(seed);
     protected static int listenerFreq = 1;
-    protected static int iterations;
-    protected static int epochs ;
+    protected static int iterations = 1;
+    protected static int epochs = 10;
     protected static double splitTrainTest = 0.7;
     protected static boolean save = true;
 
     protected static String modelType = "AlexNet"; // LeNet, AlexNet or Custom but you need to fill it out
 
-
-    public void run() throws Exception {
-
-        String pathToFolder = CnnParams.getPatjToFolder();
-        epochs = CnnParams.getEpochs();
-        iterations = CnnParams.getIterations();
-        height = CnnParams.getHeight();
-        width = CnnParams.getWidth();
+    public void run(String[] args) throws Exception {
 
         log.info("Load data....");
         /**cd
@@ -102,9 +93,8 @@ public class AnimalsClassification {
          *  - pathFilter = define additional file load filter to limit size and balance batch content
          **/
         ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
-        System.out.println(System.getProperty("user.dir") );
-        File mainPath = new File(pathToFolder);
-        System.out.println("///////////////////////////////////////" + mainPath);
+        System.out.println(System.getProperty("user.dir") + "======" + "dl4j-examples/src/main/resources/animals/");
+        File mainPath = new File("C:\\bioimg\\cytology");
         FileSplit fileSplit = new FileSplit(mainPath, NativeImageLoader.ALLOWED_FORMATS, rng);
         BalancedPathFilter pathFilter = new BalancedPathFilter(rng, labelMaker, numExamples, numLabels, batchSize);
 
@@ -188,35 +178,6 @@ public class AnimalsClassification {
             network.fit(trainIter);
         }
 
-/*
-        File locationToSave = new File("C:\\data\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\model1.bin");
-
-        MultiLayerNetwork model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
-        model.getLabels();
-
-        File testData1 = new File("C:\\data\\dl4j-examples_stable\\dl4j-examples\\src\\main\\resources\\test");
-        // Define the FileSplit(PATH, ALLOWED FORMATS,random)
-
-        FileSplit test = new FileSplit(testData1, NativeImageLoader.ALLOWED_FORMATS,rng);
-
-
-        recordReader.initialize(test);
-        DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader,batchSize,1,numLabels);
-        scaler.fit(testIter);
-        testIter.setPreProcessor(scaler);
-
-        Evaluation eval = new Evaluation(numLabels);
-
-        while(testIter.hasNext()){
-            org.nd4j.linalg.dataset.api.DataSet next = testIter.next();
-            INDArray output = model.output(next.getFeatures());
-            eval.eval(next.getLabels(),output);
-        }
-
-        log.info(eval.stats());*/
-
-
-
         log.info("Evaluate model....");
         recordReader.initialize(testData);
         dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, numLabels);
@@ -237,10 +198,9 @@ public class AnimalsClassification {
 
         if (save) {
             log.info("Save model....");
-            String basePath = FilenameUtils.concat(System.getProperty("user.dir"), "src/main/resources/");
-            ModelSerializer.writeModel(network, basePath + "model2.bin", true);
+            String basePath = "C:\\data\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\";
+            ModelSerializer.writeModel(network, basePath + "mode33.bin", true);
         }
-
         log.info("****************Example finished********************");
     }
 
@@ -311,7 +271,7 @@ public class AnimalsClassification {
             .weightInit(WeightInit.DISTRIBUTION)
             .dist(new NormalDistribution(0.0, 0.01))
             .activation(Activation.RELU)
-            .updater(Updater.NESTEROVS)
+            .updater(new Nesterovs(0.9))
             .iterations(iterations)
             .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer) // normalize to prevent vanishing or exploding gradients
             .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -322,8 +282,6 @@ public class AnimalsClassification {
             .lrPolicySteps(100000)
             .regularization(true)
             .l2(5 * 1e-4)
-            .momentum(0.9)
-            .miniBatch(false)
             .list()
             .layer(0, convInit("cnn1", channels, 96, new int[]{11, 11}, new int[]{4, 4}, new int[]{3, 3}, 0))
             .layer(1, new LocalResponseNormalization.Builder().name("lrn1").build())
@@ -332,13 +290,12 @@ public class AnimalsClassification {
             .layer(4, new LocalResponseNormalization.Builder().name("lrn2").build())
             .layer(5, maxPool("maxpool2", new int[]{3,3}))
             .layer(6,conv3x3("cnn3", 384, 0))
-            //.layer(7,conv3x3("cnn3", 256, 0))
-            //.layer(7,conv5x5("cnn4", 256, new int[] {1,1}, new int[] {2,2}, nonZeroBias))
-            //.layer(8,conv5x5("cnn5", 256, new int[] {1,1}, new int[] {2,2}, nonZeroBias))
-            .layer(7, maxPool("maxpool3", new int[]{3,3}))
-            .layer(8, fullyConnected("ffn1", 4096, nonZeroBias, dropOut, new GaussianDistribution(0, 0.005)))
-            .layer(9, fullyConnected("ffn2", 4096, nonZeroBias, dropOut, new GaussianDistribution(0, 0.005)))
-            .layer(10, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+            .layer(7,conv3x3("cnn4", 384, nonZeroBias))
+            .layer(8,conv3x3("cnn5", 256, nonZeroBias))
+            .layer(9, maxPool("maxpool3", new int[]{3,3}))
+            .layer(10, fullyConnected("ffn1", 4096, nonZeroBias, dropOut, new GaussianDistribution(0, 0.005)))
+            .layer(11, fullyConnected("ffn2", 4096, nonZeroBias, dropOut, new GaussianDistribution(0, 0.005)))
+            .layer(12, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                 .name("output")
                 .nOut(numLabels)
                 .activation(Activation.SOFTMAX)
@@ -360,7 +317,7 @@ public class AnimalsClassification {
     }
 
     public static void main(String[] args) throws Exception {
-        //new AnimalsClassification().run(args);
+        new MyCLS().run(args);
     }
 
 }

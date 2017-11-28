@@ -47,8 +47,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2YCrCb;
-
 /**
  * Animal Classification
  *
@@ -66,33 +64,33 @@ import static org.bytedeco.javacpp.opencv_imgproc.COLOR_BGR2YCrCb;
  *  - Tune by adjusting learning rate, updaters, activation & loss functions, regularization, ...
  */
 
-public class AnimalsClassification {
-    protected static final Logger log = LoggerFactory.getLogger(AnimalsClassification.class);
-    protected static int height ;
-    protected static int width ;
+public class CnnClassification {
+    protected static final Logger log = LoggerFactory.getLogger(CnnClassification.class);
+    protected static int height = 150;
+    protected static int width = 150;
     protected static int channels = 3;
-    protected static int numExamples = 70;
+    protected static int numExamples = 30;
     protected static int numLabels = 4;
     protected static int batchSize = 20;
 
     protected static long seed = 42;
     protected static Random rng = new Random(seed);
     protected static int listenerFreq = 1;
-    protected static int iterations;
-    protected static int epochs ;
+    protected static int iterations = 1;
+    protected static int epochs = 40;
     protected static double splitTrainTest = 0.7;
     protected static boolean save = true;
 
     protected static String modelType = "AlexNet"; // LeNet, AlexNet or Custom but you need to fill it out
 
 
-    public void run() throws Exception {
+    public String run() throws Exception {
 
         String pathToFolder = CnnParams.getPatjToFolder();
-        epochs = CnnParams.getEpochs();
-        iterations = CnnParams.getIterations();
-        height = CnnParams.getHeight();
-        width = CnnParams.getWidth();
+        //epochs = CnnParams.getEpochs();
+        //iterations = CnnParams.getIterations();
+        //height = CnnParams.getHeight();
+        //width = CnnParams.getWidth();
 
         log.info("Load data....");
         /**cd
@@ -104,7 +102,6 @@ public class AnimalsClassification {
         ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
         System.out.println(System.getProperty("user.dir") );
         File mainPath = new File(pathToFolder);
-        System.out.println("///////////////////////////////////////" + mainPath);
         FileSplit fileSplit = new FileSplit(mainPath, NativeImageLoader.ALLOWED_FORMATS, rng);
         BalancedPathFilter pathFilter = new BalancedPathFilter(rng, labelMaker, numExamples, numLabels, batchSize);
 
@@ -168,33 +165,14 @@ public class AnimalsClassification {
         MultipleEpochsIterator trainIter;
 
 
-        log.info("Train model....");
-        // Train without transformations
-        recordReader.initialize(trainData, null);
-        dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, numLabels);
-        scaler.fit(dataIter);
-        dataIter.setPreProcessor(scaler);
-        trainIter = new MultipleEpochsIterator(epochs, dataIter);
-        network.fit(trainIter);
 
-        // Train with transformations
-        for (ImageTransform transform : transforms) {
-            System.out.print("\nTraining on transformation: " + transform.getClass().toString() + "\n\n");
-            recordReader.initialize(trainData, transform);
-            dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, numLabels);
-            scaler.fit(dataIter);
-            dataIter.setPreProcessor(scaler);
-            trainIter = new MultipleEpochsIterator(epochs, dataIter);
-            network.fit(trainIter);
-        }
 
-/*
         File locationToSave = new File("C:\\data\\dl4j-examples\\dl4j-examples\\src\\main\\resources\\model1.bin");
 
         MultiLayerNetwork model = ModelSerializer.restoreMultiLayerNetwork(locationToSave);
         model.getLabels();
 
-        File testData1 = new File("C:\\data\\dl4j-examples_stable\\dl4j-examples\\src\\main\\resources\\test");
+        File testData1 = new File(pathToFolder);
         // Define the FileSplit(PATH, ALLOWED FORMATS,random)
 
         FileSplit test = new FileSplit(testData1, NativeImageLoader.ALLOWED_FORMATS,rng);
@@ -213,35 +191,12 @@ public class AnimalsClassification {
             eval.eval(next.getLabels(),output);
         }
 
-        log.info(eval.stats());*/
+        log.info(eval.stats());
 
 
 
-        log.info("Evaluate model....");
-        recordReader.initialize(testData);
-        dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, numLabels);
-        scaler.fit(dataIter);
-        dataIter.setPreProcessor(scaler);
-        Evaluation eval = network.evaluate(dataIter);
-        log.info(eval.stats(true));
+        return eval.stats();
 
-        // Example on how to get predict results with trained model. Result for first example in minibatch is printed
-        dataIter.reset();
-        DataSet testDataSet = dataIter.next();
-        List<String> allClassLabels = recordReader.getLabels();
-        int labelIndex = testDataSet.getLabels().argMax(1).getInt(0);
-        int[] predictedClasses = network.predict(testDataSet.getFeatures());
-        String expectedResult = allClassLabels.get(labelIndex);
-        String modelPrediction = allClassLabels.get(predictedClasses[0]);
-        System.out.print("\nFor a single example that is labeled " + expectedResult + " the model predicted " + modelPrediction + "\n\n");
-
-        if (save) {
-            log.info("Save model....");
-            String basePath = FilenameUtils.concat(System.getProperty("user.dir"), "src/main/resources/");
-            ModelSerializer.writeModel(network, basePath + "model2.bin", true);
-        }
-
-        log.info("****************Example finished********************");
     }
 
     private ConvolutionLayer convInit(String name, int in, int out, int[] kernel, int[] stride, int[] pad, double bias) {
